@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Helpdesk — Support Ticket System</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/dist/tabler-icons.min.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f8f9fa;
+    --surface: #ffffff;
+    --surface-2: #f1f3f5;
+    --border: rgba(0,0,0,0.09);
+    --border-md: rgba(0,0,0,0.16);
+    --text-1: #0f1117;
+    --text-2: #4a5568;
+    --text-3: #9aa5b4;
+    --blue: #185FA5;
+    --blue-bg: #E6F1FB;
+    --blue-text: #0C447C;
+    --amber: #BA7517;
+    --amber-bg: #FAEEDA;
+    --amber-text: #633806;
+    --green: #3B6D11;
+    --green-bg: #EAF3DE;
+    --green-text: #27500A;
+    --gray-bg: #F1EFE8;
+    --gray-text: #444441;
+    --red-bg: #FCEBEB;
+    --red-text: #791F1F;
+    --radius: 8px;
+    --radius-lg: 12px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text-1);
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── Layout ── */
+  .app { display: flex; min-height: 100vh; }
+
+  .sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    background: var(--surface);
+    border-right: 0.5px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 0 0 1.5rem;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+  }
+
+  .sidebar-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 1.25rem 1.25rem 1rem;
+    border-bottom: 0.5px solid var(--border);
+    margin-bottom: 0.75rem;
+  }
+  .logo-icon {
+    width: 34px; height: 34px;
+    background: var(--blue);
+    border-radius: var(--radius);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 18px;
+    flex-shrink: 0;
+  }
+  .logo-text { font-size: 15px; font-weight: 600; color: var(--text-1); }
+  .logo-sub { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+
+  .nav-group { padding: 0 0.75rem; margin-bottom: 0.25rem; }
+  .nav-label { font-size: 10px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.08em; padding: 0.5rem 0.5rem 0.25rem; }
+  .nav-item {
+    display: flex; align-items: center; gap: 9px;
+    padding: 7px 10px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 13.5px;
+    color: var(--text-2);
+    transition: background 0.12s, color 0.12s;
+    border: none; background: none; width: 100%; text-align: left; font-family: inherit;
+  }
+  .nav-item i { font-size: 17px; flex-shrink: 0; }
+  .nav-item:hover { background: var(--surface-2); color: var(--text-1); }
+  .nav-item.active { background: var(--blue-bg); color: var(--blue-text); font-weight: 500; }
+  .nav-item.active i { color: var(--blue); }
+
+  .sidebar-stats { margin: auto 0 0; padding: 1rem 1.25rem 0; border-top: 0.5px solid var(--border); }
+  .ss-title { font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 10px; }
+  .ss-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .ss-label { font-size: 12px; color: var(--text-2); display: flex; align-items: center; gap: 5px; }
+  .ss-dot { width: 7px; height: 7px; border-radius: 50%; }
+  .ss-val { font-size: 13px; font-weight: 600; }
+
+  /* ── Main ── */
+  .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+  .topbar {
+    background: var(--surface);
+    border-bottom: 0.5px solid var(--border);
+    padding: 0.85rem 1.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .topbar-title { font-size: 16px; font-weight: 600; color: var(--text-1); }
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+
+  .content { padding: 1.75rem; flex: 1; }
+
+  /* ── Stat cards ── */
+  .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 1.75rem; }
+  .stat-card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1rem 1.25rem;
+    box-shadow: var(--shadow);
+  }
+  .sc-label { font-size: 12px; color: var(--text-3); margin-bottom: 6px; font-weight: 500; display: flex; align-items: center; gap: 5px; }
+  .sc-val { font-size: 28px; font-weight: 600; line-height: 1; }
+  .sc-sub { font-size: 11px; color: var(--text-3); margin-top: 5px; }
+
+  /* ── Buttons ── */
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: var(--radius); font-size: 13.5px; font-family: inherit; font-weight: 500; cursor: pointer; border: none; transition: background 0.12s, transform 0.1s; }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary { background: var(--blue); color: #fff; }
+  .btn-primary:hover { background: #0C447C; }
+  .btn-success { background: var(--green); color: #fff; }
+  .btn-success:hover { background: #27500A; }
+  .btn-warn { background: var(--amber); color: #fff; }
+  .btn-warn:hover { background: #854F0B; }
+  .btn-danger { background: #A32D2D; color: #fff; }
+  .btn-danger:hover { background: #791F1F; }
+  .btn-ghost { background: none; border: 0.5px solid var(--border-md); color: var(--text-2); }
+  .btn-ghost:hover { background: var(--surface-2); color: var(--text-1); }
+  .btn i { font-size: 15px; }
+
+  /* ── Badges ── */
+  .badge { display: inline-flex; align-items: center; font-size: 11.5px; padding: 3px 9px; border-radius: 99px; font-weight: 500; white-space: nowrap; }
+  .badge-open { background: var(--blue-bg); color: var(--blue-text); }
+  .badge-progress { background: var(--amber-bg); color: var(--amber-text); }
+  .badge-resolved { background: var(--green-bg); color: var(--green-text); }
+  .badge-closed { background: var(--gray-bg); color: var(--gray-text); }
+  .badge-high { background: var(--red-bg); color: var(--red-text); }
+  .badge-medium { background: var(--amber-bg); color: var(--amber-text); }
+  .badge-low { background: var(--green-bg); color: var(--green-text); }
+
+  /* ── Forms ── */
+  .form-card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    max-width: 620px;
+  }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group.full { grid-column: 1 / -1; }
+  label { font-size: 13px; font-weight: 500; color: var(--text-2); }
+  input[type="text"], input[type="email"], select, textarea {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    padding: 8px 11px;
+    border: 0.5px solid var(--border-md);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--text-1);
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    width: 100%;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(24,95,165,0.12);
+  }
+  textarea { resize: vertical; min-height: 90px; line-height: 1.5; }
+
+  /* ── Ticket list ── */
+  .filter-bar { display: flex; gap: 10px; margin-bottom: 1rem; align-items: center; }
+  .filter-bar input { max-width: 240px; }
+  .filter-bar select { max-width: 150px; }
+  .search-wrap { position: relative; flex: 1; max-width: 260px; }
+  .search-wrap i { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-3); font-size: 16px; pointer-events: none; }
+  .search-wrap input { padding-left: 34px; }
+
+  .ticket-table {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  .ticket-table table { width: 100%; border-collapse: collapse; }
+  .ticket-table th {
+    text-align: left;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 10px 16px;
+    background: var(--surface-2);
+    border-bottom: 0.5px solid var(--border);
+  }
+  .ticket-table td {
+    padding: 12px 16px;
+    border-bottom: 0.5px solid var(--border);
+    font-size: 13.5px;
+    vertical-align: middle;
+  }
+  .ticket-table tr:last-child td { border-bottom: none; }
+  .ticket-table tr:hover td { background: #fafbfc; cursor: pointer; }
+  .td-id { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-3); }
+  .td-subject { font-weight: 500; color: var(--text-1); max-width: 280px; }
+  .td-subject small { display: block; font-size: 12px; color: var(--text-3); font-weight: 400; margin-top: 1px; }
+
+  /* ── Detail ── */
+  .detail-layout { display: grid; grid-template-columns: 1fr 320px; gap: 1.25rem; }
+  .detail-main { display: flex; flex-direction: column; gap: 1rem; }
+  .detail-side { display: flex; flex-direction: column; gap: 1rem; }
+
+  .panel {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .panel-head {
+    padding: 12px 16px;
+    border-bottom: 0.5px solid var(--border);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    background: var(--surface-2);
+    display: flex; align-items: center; gap: 7px;
+  }
+  .panel-body { padding: 16px; }
+
+  .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .meta-item { display: flex; flex-direction: column; gap: 3px; }
+  .meta-label { font-size: 11px; color: var(--text-3); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+  .meta-val { font-size: 13.5px; color: var(--text-1); font-weight: 500; }
+
+  .desc-text { font-size: 14px; color: var(--text-2); line-height: 1.7; white-space: pre-wrap; }
+
+  .action-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+
+  .activity-list { display: flex; flex-direction: column; }
+  .activity-item { display: flex; gap: 12px; padding: 10px 0; border-bottom: 0.5px solid var(--border); position: relative; }
+  .activity-item:last-child { border-bottom: none; }
+  .activity-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+  .dot-blue { background: var(--blue); }
+  .dot-green { background: var(--green); }
+  .dot-amber { background: var(--amber); }
+  .dot-gray { background: #888780; }
+  .activity-body { flex: 1; min-width: 0; }
+  .activity-action { font-size: 13px; color: var(--text-1); }
+  .activity-time { font-size: 11.5px; color: var(--text-3); margin-top: 1px; }
+
+  .closed-banner {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--green-bg);
+    border: 0.5px solid #C0DD97;
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--green-text);
+    font-weight: 500;
+  }
+
+  .empty-state { padding: 3.5rem 1rem; text-align: center; }
+  .empty-state i { font-size: 40px; color: var(--text-3); display: block; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; color: var(--text-3); }
+
+  .no-detail { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 320px; text-align: center; gap: 12px; }
+  .no-detail i { font-size: 48px; color: var(--text-3); }
+  .no-detail p { font-size: 14px; color: var(--text-3); }
+
+  /* ── Toast ── */
+  #toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--text-1);
+    color: #fff;
+    padding: 11px 18px;
+    border-radius: var(--radius);
+    font-size: 13.5px;
+    display: flex; align-items: center; gap: 9px;
+    box-shadow: var(--shadow-md);
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.2s, transform 0.2s;
+    pointer-events: none;
+    z-index: 999;
+    max-width: 320px;
+  }
+  #toast.show { opacity: 1; transform: translateY(0); }
+  #toast i { font-size: 17px; }
+
+  /* ── Responsive ── */
+  @media (max-width: 900px) {
+    .sidebar { display: none; }
+    .stat-grid { grid-template-columns: repeat(2, 1fr); }
+    .detail-layout { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 600px) {
+    .content { padding: 1rem; }
+    .form-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- Sidebar -->
+  <nav class="sidebar" aria-label="Main navigation">
+    <div class="sidebar-logo">
+      <div class="logo-icon"><i class="ti ti-headset" aria-hidden="true"></i></div>
+      <div>
+        <div class="logo-text">Helpdesk</div>
+        <div class="logo-sub">Support Portal</div>
+      </div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-label">Tickets</div>
+      <button class="nav-item active" onclick="showTab('create')" id="nav-create">
+        <i class="ti ti-plus" aria-hidden="true"></i> New ticket
+      </button>
+      <button class="nav-item" onclick="showTab('list')" id="nav-list">
+        <i class="ti ti-list" aria-hidden="true"></i> All tickets
+      </button>
+      <button class="nav-item" onclick="showTab('detail')" id="nav-detail">
+        <i class="ti ti-file-description" aria-hidden="true"></i> Ticket detail
+      </button>
+    </div>
+
+    <div class="sidebar-stats">
+      <div class="ss-title">Live queue</div>
+      <div class="ss-row"><span class="ss-label"><span class="ss-dot" style="background:var(--blue)"></span>Open</span><span class="ss-val" style="color:var(--blue)" id="ss-open">0</span></div>
+      <div class="ss-row"><span class="ss-label"><span class="ss-dot" style="background:var(--amber)"></span>In Progress</span><span class="ss-val" style="color:var(--amber)" id="ss-prog">0</span></div>
+      <div class="ss-row"><span class="ss-label"><span class="ss-dot" style="background:var(--green)"></span>Resolved</span><span class="ss-val" style="color:var(--green)" id="ss-resolved">0</span></div>
+      <div class="ss-row"><span class="ss-label"><span class="ss-dot" style="background:#888780"></span>Closed</span><span class="ss-val" style="color:var(--text-3)" id="ss-closed">0</span></div>
+    </div>
+  </nav>
+
+  <!-- Main -->
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-title" id="topbar-title">New ticket</div>
+      <div class="topbar-right">
+        <span style="font-size:12px; color:var(--text-3); font-family:'JetBrains Mono',monospace;">Java Support v1.0</span>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- ── Create tab ── -->
+      <div id="tab-create">
+        <div class="stat-grid" style="margin-bottom:1.75rem;">
+          <div class="stat-card">
+            <div class="sc-label"><i class="ti ti-tickets" aria-hidden="true" style="font-size:14px;"></i> Total tickets</div>
+            <div class="sc-val" id="s-all">0</div>
+            <div class="sc-sub">All time</div>
+          </div>
+          <div class="stat-card">
+            <div class="sc-label" style="color:var(--blue-text)"><i class="ti ti-circle-dot" aria-hidden="true" style="font-size:14px;"></i> Open</div>
+            <div class="sc-val" style="color:var(--blue)" id="s-open">0</div>
+            <div class="sc-sub">Awaiting action</div>
+          </div>
+          <div class="stat-card">
+            <div class="sc-label" style="color:var(--amber-text)"><i class="ti ti-player-play" aria-hidden="true" style="font-size:14px;"></i> In progress</div>
+            <div class="sc-val" style="color:var(--amber)" id="s-prog">0</div>
+            <div class="sc-sub">Being worked on</div>
+          </div>
+          <div class="stat-card">
+            <div class="sc-label" style="color:var(--green-text)"><i class="ti ti-circle-check" aria-hidden="true" style="font-size:14px;"></i> Closed</div>
+            <div class="sc-val" style="color:var(--green)" id="s-closed">0</div>
+            <div class="sc-sub">Fully resolved</div>
+          </div>
+        </div>
+
+        <div class="form-card">
+          <div style="margin-bottom:1.25rem;">
+            <h2 style="font-size:15px;font-weight:600;color:var(--text-1);margin-bottom:3px;">Submit a support ticket</h2>
+            <p style="font-size:13px;color:var(--text-3);">Describe your issue and we'll get back to you shortly.</p>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="f-name">Requester name</label>
+              <input type="text" id="f-name" placeholder="e.g. Priya Sharma" />
+            </div>
+            <div class="form-group">
+              <label for="f-email">Email</label>
+              <input type="email" id="f-email" placeholder="priya@example.com" />
+            </div>
+            <div class="form-group full">
+              <label for="f-subject">Subject</label>
+              <input type="text" id="f-subject" placeholder="Brief description of the issue" />
+            </div>
+            <div class="form-group">
+              <label for="f-category">Category</label>
+              <select id="f-category">
+                <option value="Software">Software</option>
+                <option value="Hardware">Hardware</option>
+                <option value="Network">Network</option>
+                <option value="Account">Account &amp; Access</option>
+                <option value="Database">Database</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="f-priority">Priority</label>
+              <select id="f-priority">
+                <option value="Low">Low</option>
+                <option value="Medium" selected>Medium</option>
+                <option value="High">High</option>
+              </select>
+            </div>
+            <div class="form-group full">
+              <label for="f-desc">Description</label>
+              <textarea id="f-desc" placeholder="Describe the issue — steps to reproduce, error messages, environment details…"></textarea>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <button class="btn btn-primary" onclick="createTicket()"><i class="ti ti-send" aria-hidden="true"></i> Submit ticket</button>
+            <button class="btn btn-ghost" onclick="clearForm()"><i class="ti ti-x" aria-hidden="true"></i> Clear</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── List tab ── -->
+      <div id="tab-list" style="display:none;">
+        <div class="filter-bar">
+          <div class="search-wrap">
+            <i class="ti ti-search" aria-hidden="true"></i>
+            <input type="text" id="search-input" placeholder="Search tickets…" oninput="renderList()" />
+          </div>
+          <select id="filter-status" onchange="renderList()">
+            <option value="">All statuses</option>
+            <option value="Open">Open</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Resolved">Resolved</option>
+            <option value="Closed">Closed</option>
+          </select>
+          <select id="filter-priority" onchange="renderList()">
+            <option value="">All priorities</option>
+            <option value="High">High</option>
+            <option value="Medium">Medium</option>
+            <option value="Low">Low</option>
+          </select>
+          <select id="filter-category" onchange="renderList()">
+            <option value="">All categories</option>
+            <option value="Software">Software</option>
+            <option value="Hardware">Hardware</option>
+            <option value="Network">Network</option>
+            <option value="Account">Account &amp; Access</option>
+            <option value="Database">Database</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="ticket-table">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Subject</th>
+                <th>Status</th>
+                <th>Priority</th>
+                <th>Category</th>
+                <th>Created</th>
+              </tr>
+            </thead>
+            <tbody id="ticket-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── Detail tab ── -->
+      <div id="tab-detail" style="display:none;">
+        <div id="detail-content">
+          <div class="no-detail">
+            <i class="ti ti-file-description" aria-hidden="true"></i>
+            <p>Select a ticket from <strong>All tickets</strong> to view its details.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" role="status" aria-live="polite"><i class="ti ti-check" aria-hidden="true"></i><span id="toast-msg"></span></div>
+
+<script>
+let tickets = [];
+let counter = 1000;
+let selectedId = null;
+
+function uid() { return 'TKT-' + (++counter); }
+
+function ts() {
+  return new Date().toLocaleString('en-IN', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit', hour12:true });
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function updateStats() {
+  const open = tickets.filter(t => t.status === 'Open').length;
+  const prog = tickets.filter(t => t.status === 'In Progress').length;
+  const resolved = tickets.filter(t => t.status === 'Resolved').length;
+  const closed = tickets.filter(t => t.status === 'Closed').length;
+  document.getElementById('s-all').textContent = tickets.length;
+  document.getElementById('s-open').textContent = open;
+  document.getElementById('s-prog').textContent = prog;
+  document.getElementById('s-closed').textContent = closed;
+  document.getElementById('ss-open').textContent = open;
+  document.getElementById('ss-prog').textContent = prog;
+  document.getElementById('ss-resolved').textContent = resolved;
+  document.getElementById('ss-closed').textContent = closed;
+}
+
+function showTab(name) {
+  ['create','list','detail'].forEach(n => {
+    document.getElementById('tab-'+n).style.display = n === name ? '' : 'none';
+    document.getElementById('nav-'+n).classList.toggle('active', n === name);
+  });
+  const titles = { create:'New ticket', list:'All tickets', detail:'Ticket detail' };
+  document.getElementById('topbar-title').textContent = titles[name];
+  if(name === 'list') renderList();
+  if(name === 'detail' && selectedId) renderDetail(selectedId);
+}
+
+function createTicket() {
+  const name = document.getElementById('f-name').value.trim();
+  const email = document.getElementById('f-email').value.trim();
+  const subject = document.getElementById('f-subject').value.trim();
+  const desc = document.getElementById('f-desc').value.trim();
+  if(!name || !subject || !desc) { showToast('Please fill in name, subject, and description.'); return; }
+  const t = {
+    id: uid(), name, email, subject,
+    description: desc,
+    category: document.getElementById('f-category').value,
+    priority: document.getElementById('f-priority').value,
+    status: 'Open',
+    resolution: '',
+    created: ts(),
+    updated: ts(),
+    log: [{ action:'Ticket created', color:'dot-blue', time: ts() }]
+  };
+  tickets.unshift(t);
+  updateStats();
+  showToast(t.id + ' submitted successfully.');
+  clearForm();
+}
+
+function clearForm() {
+  ['f-name','f-email','f-subject','f-desc'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('f-priority').value = 'Medium';
+  document.getElementById('f-category').value = 'Software';
+}
+
+function badgeStatus(s) {
+  const map = {'Open':'open','In Progress':'progress','Resolved':'resolved','Closed':'closed'};
+  return `<span class="badge badge-${map[s]||'open'}">${s}</span>`;
+}
+function badgePri(p) {
+  return `<span class="badge badge-${p.toLowerCase()}">${p}</span>`;
+}
+
+function renderList() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  const sf = document.getElementById('filter-status').value;
+  const pf = document.getElementById('filter-priority').value;
+  const cf = document.getElementById('filter-category').value;
+  const tbody = document.getElementById('ticket-tbody');
+  const filtered = tickets.filter(t => {
+    if(sf && t.status !== sf) return false;
+    if(pf && t.priority !== pf) return false;
+    if(cf && t.category !== cf) return false;
+    if(q && !t.subject.toLowerCase().includes(q) && !t.id.toLowerCase().includes(q) && !t.name.toLowerCase().includes(q)) return false;
+    return true;
+  });
+  if(!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="ti ti-inbox-off" aria-hidden="true"></i><p>No tickets match your filters.</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = filtered.map(t => `
+    <tr onclick="selectTicket('${t.id}')">
+      <td class="td-id">${t.id}</td>
+      <td class="td-subject">${t.subject}<small>${t.name}</small></td>
+      <td>${badgeStatus(t.status)}</td>
+      <td>${badgePri(t.priority)}</td>
+      <td style="font-size:13px;color:var(--text-2);">${t.category}</td>
+      <td style="font-size:12px;color:var(--text-3);white-space:nowrap;">${t.created}</td>
+    </tr>
+  `).join('');
+}
+
+function selectTicket(id) {
+  selectedId = id;
+  showTab('detail');
+  renderDetail(id);
+}
+
+function renderDetail(id) {
+  const t = tickets.find(x => x.id === id);
+  if(!t) return;
+  const isClosed = t.status === 'Closed';
+
+  const logHtml = t.log.slice().reverse().map(e => `
+    <div class="activity-item">
+      <div class="activity-dot ${e.color}"></div>
+      <div class="activity-body">
+        <div class="activity-action">${e.action}</div>
+        <div class="activity-time">${e.time}</div>
+      </div>
+    </div>
+  `).join('');
+
+  const actions = !isClosed ? `
+    <div class="action-row">
+      ${t.status === 'Open' ? `<button class="btn btn-warn" onclick="updateStatus('${id}','In Progress')"><i class="ti ti-player-play" aria-hidden="true"></i> Mark in progress</button>` : ''}
+      ${t.status !== 'Resolved' && t.status !== 'Closed' ? `<button class="btn btn-success" onclick="resolve('${id}')"><i class="ti ti-check" aria-hidden="true"></i> Mark resolved</button>` : ''}
+      ${t.status === 'Resolved' ? `<button class="btn btn-danger" onclick="closeTicket('${id}')"><i class="ti ti-lock" aria-hidden="true"></i> Close ticket</button>` : ''}
+      <button class="btn btn-ghost" onclick="saveResolution('${id}')"><i class="ti ti-device-floppy" aria-hidden="true"></i> Save notes</button>
+    </div>
+  ` : `
+    <div class="closed-banner"><i class="ti ti-lock" aria-hidden="true"></i> This ticket is closed and read-only.</div>
+  `;
+
+  document.getElementById('detail-content').innerHTML = `
+    <div class="detail-layout">
+      <div class="detail-main">
+        <div class="panel">
+          <div class="panel-head"><i class="ti ti-file-description" aria-hidden="true"></i> Ticket overview</div>
+          <div class="panel-body">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px;">
+              <div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-3);margin-bottom:4px;">${t.id}</div>
+                <h2 style="font-size:17px;font-weight:600;color:var(--text-1);line-height:1.3;">${t.subject}</h2>
+              </div>
+              <div style="display:flex;gap:6px;flex-shrink:0;">${badgeStatus(t.status)}${badgePri(t.priority)}</div>
+            </div>
+            <div class="meta-grid" style="margin-bottom:16px;">
+              <div class="meta-item"><div class="meta-label">Requester</div><div class="meta-val">${t.name}</div></div>
+              <div class="meta-item"><div class="meta-label">Email</div><div class="meta-val" style="font-size:13px;">${t.email||'—'}</div></div>
+              <div class="meta-item"><div class="meta-label">Category</div><div class="meta-val">${t.category}</div></div>
+              <div class="meta-item"><div class="meta-label">Last updated</div><div class="meta-val" style="font-size:12.5px;">${t.updated}</div></div>
+            </div>
+            <div style="margin-bottom:4px;font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;">Description</div>
+            <div class="desc-text" style="margin-bottom:${isClosed?'0':'16px'};">${t.description}</div>
+            ${!isClosed ? `
+            <div style="margin-top:16px;">
+              <label style="font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:6px;">Resolution notes</label>
+              <textarea id="res-input" style="width:100%;font-size:13.5px;min-height:90px;" placeholder="Add root cause, resolution steps, or workaround…">${t.resolution}</textarea>
+            </div>
+            ` : t.resolution ? `
+            <div style="margin-top:16px;padding:12px;background:var(--green-bg);border-radius:var(--radius);border-left:3px solid var(--green);">
+              <div style="font-size:11px;font-weight:600;color:var(--green);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;">Resolution</div>
+              <div style="font-size:13.5px;color:var(--green-text);line-height:1.6;">${t.resolution}</div>
+            </div>
+            ` : ''}
+            ${actions}
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-side">
+        <div class="panel">
+          <div class="panel-head"><i class="ti ti-info-circle" aria-hidden="true"></i> Ticket info</div>
+          <div class="panel-body" style="display:flex;flex-direction:column;gap:12px;">
+            <div class="meta-item"><div class="meta-label">Ticket ID</div><div class="meta-val" style="font-family:'JetBrains Mono',monospace;font-size:13px;">${t.id}</div></div>
+            <div class="meta-item"><div class="meta-label">Status</div><div class="meta-val">${badgeStatus(t.status)}</div></div>
+            <div class="meta-item"><div class="meta-label">Priority</div><div class="meta-val">${badgePri(t.priority)}</div></div>
+            <div class="meta-item"><div class="meta-label">Category</div><div class="meta-val">${t.category}</div></div>
+            <div class="meta-item"><div class="meta-label">Created</div><div class="meta-val" style="font-size:12.5px;">${t.created}</div></div>
+            <div class="meta-item"><div class="meta-label">Updated</div><div class="meta-val" style="font-size:12.5px;">${t.updated}</div></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><i class="ti ti-history" aria-hidden="true"></i> Activity log</div>
+          <div class="panel-body" style="padding:0 16px;">
+            <div class="activity-list">${logHtml}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function saveResolution(id) {
+  const t = tickets.find(x => x.id===id); if(!t) return;
+  const el = document.getElementById('res-input');
+  if(el) t.resolution = el.value.trim();
+  t.updated = ts();
+  t.log.push({ action:'Resolution notes saved', color:'dot-amber', time: ts() });
+  showToast('Notes saved.');
+  renderDetail(id);
+}
+
+function updateStatus(id, status) {
+  const t = tickets.find(x => x.id===id); if(!t) return;
+  const el = document.getElementById('res-input');
+  if(el) t.resolution = el.value.trim();
+  t.status = status; t.updated = ts();
+  t.log.push({ action:'Status changed to ' + status, color:'dot-amber', time: ts() });
+  updateStats(); showToast('Status updated to ' + status + '.');
+  renderDetail(id); renderList();
+}
+
+function resolve(id) {
+  const t = tickets.find(x => x.id===id); if(!t) return;
+  const el = document.getElementById('res-input');
+  if(el) t.resolution = el.value.trim();
+  t.status = 'Resolved'; t.updated = ts();
+  t.log.push({ action:'Ticket marked as resolved', color:'dot-green', time: ts() });
+  updateStats(); showToast('Ticket ' + id + ' resolved.');
+  renderDetail(id); renderList();
+}
+
+function closeTicket(id) {
+  const t = tickets.find(x => x.id===id); if(!t) return;
+  if(t.status !== 'Resolved') { showToast('Only resolved tickets can be closed.'); return; }
+  const el = document.getElementById('res-input');
+  if(el) t.resolution = el.value.trim();
+  t.status = 'Closed'; t.updated = ts();
+  t.log.push({ action:'Ticket closed', color:'dot-gray', time: ts() });
+  updateStats(); showToast('Ticket ' + id + ' closed.');
+  renderDetail(id); renderList();
+}
+
+// Seed data
+const seeds = [
+  { name:'Arun Mehta', email:'arun@corp.com', subject:'NullPointerException in UserService.java', description:'Getting NPE at line 142 in UserService when login fails with invalid token.\n\nStack trace:\njava.lang.NullPointerException\n  at com.corp.service.UserService.authenticate(UserService.java:142)', category:'Software', priority:'High', status:'In Progress', resolution:'Investigating null check on tokenValidator.verify() return value. Likely needs Optional wrapper.', log:['Ticket created:dot-blue','Status changed to In Progress:dot-amber'] },
+  { name:'Divya Nair', email:'divya@corp.com', subject:'Maven build fails on CI pipeline', description:'mvn clean install fails with dependency resolution error for spring-boot-starter 3.2.0. Works locally but breaks on Jenkins CI.\n\nError: Could not resolve dependencies for project com.corp:app:jar:0.0.1-SNAPSHOT', category:'Software', priority:'Medium', status:'Open', resolution:'', log:['Ticket created:dot-blue'] },
+  { name:'Kiran Raj', email:'kiran@corp.com', subject:'Cannot connect to PostgreSQL on port 5432', description:'New developer environment setup — getting "Connection refused" when running the Spring Boot app locally.\n\nSuspect firewall rule is blocking port 5432 on the dev server.', category:'Database', priority:'High', status:'Resolved', resolution:'Added inbound rule for port 5432 in the security group. Verified connectivity with `telnet db-host 5432`. Developer confirmed the app connects successfully.', log:['Ticket created:dot-blue','Status changed to In Progress:dot-amber','Ticket marked as resolved:dot-green'] },
+  { name:'Sneha Kulkarni', email:'sneha@corp.com', subject:'LDAP login broken after AD migration', description:'Users unable to log in via SSO since the Active Directory migration last Friday. Error: "LDAP authentication failed" in application logs.', category:'Account', priority:'High', status:'Open', resolution:'', log:['Ticket created:dot-blue'] },
+  { name:'Raj Pillai', email:'raj@corp.com', subject:'Gradle dependency conflict on Java 17', description:'After upgrading to Java 17, getting module-path conflicts between Jackson 2.14 and an older internal library. Builds fine on Java 11.', category:'Software', priority:'Low', status:'Closed', resolution:'Excluded the conflicting transitive dependency in build.gradle using `exclude group`. Verified clean build on Java 17.', log:['Ticket created:dot-blue','Status changed to In Progress:dot-amber','Ticket marked as resolved:dot-green','Ticket closed:dot-gray'] },
+];
+
+seeds.forEach(s => {
+  const t = { id: uid(), ...s, created: ts(), updated: ts(), log: s.log.map(l => { const [action,color]=l.split(':'); return { action, color, time: ts() }; }) };
+  tickets.push(t);
+});
+updateStats();
+</script>
+</body>
+</html>
